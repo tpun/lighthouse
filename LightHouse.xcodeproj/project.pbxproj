@@ -123,9 +123,9 @@
 		2455AD4418FA2F0200EC9849 /* LightHouse */ = {
 			isa = PBXGroup;
 			children = (
+				2455AD5018FA2F0200EC9849 /* Main.storyboard */,
 				2455AD4D18FA2F0200EC9849 /* CLAppDelegate.h */,
 				2455AD4E18FA2F0200EC9849 /* CLAppDelegate.m */,
-				2455AD5018FA2F0200EC9849 /* Main.storyboard */,
 				2455AD5618FA2F0300EC9849 /* CLMasterViewController.h */,
 				2455AD5718FA2F0300EC9849 /* CLMasterViewController.m */,
 				2455AD5918FA2F0300EC9849 /* CLDetailViewController.h */,
