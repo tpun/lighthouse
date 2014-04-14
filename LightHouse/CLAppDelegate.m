@@ -84,7 +84,8 @@
 
 - (void)startMonitoring
 {
-    [self.locationManager startMonitoringForRegion:[self beaconRegion]];
+    //[self.locationManager startMonitoringForRegion:[self beaconRegion]];
+    [self.locationManager startRangingBeaconsInRegion:[self beaconRegion]];
 }
 
 - (void)locationManager:(CLLocationManager *)manager didRangeBeacons:(NSArray *)beacons inRegion:(CLBeaconRegion *)region
@@ -117,7 +118,57 @@
 {
     if (CLProximityImmediate==beacon.proximity) {
         NSLog(@"Major: %@, Minor %@", beacon.major, beacon.minor);
+
+        NSError *error=nil;
+        NSManagedObject *beaconEvent = [self latestBeaconEvent:beacon];
+        if (beaconEvent) {
+            NSDate *nowDate = [NSDate date];
+            NSDate *lastSeenAt = [beaconEvent valueForKey:@"lastSeenAt"];
+            NSTimeInterval interval = [nowDate timeIntervalSinceDate:lastSeenAt];
+            if (interval < 5) {
+                [beaconEvent setValue:nowDate forKey:@"lastSeenAt"];
+                [self.managedObjectContext save:&error];
+            } else {
+                [self createBeaconEvent:beacon];
+            }
+        } else {
+            [self createBeaconEvent:beacon];
+        }
     }
+}
+
+- (void)createBeaconEvent:(CLBeacon *)beacon
+{
+    NSLog(@"createBeaconEvent: %@", beacon);
+    NSManagedObject *newBeaconEvent = [NSEntityDescription insertNewObjectForEntityForName:@"BeaconEvent" inManagedObjectContext:self.managedObjectContext];
+    [newBeaconEvent setValue:beacon.major forKey:@"major"];
+    [newBeaconEvent setValue:beacon.minor forKey:@"minor"];
+    NSDate *nowDate = [NSDate date];
+    [newBeaconEvent setValue:nowDate forKey:@"createdAt"];
+    [newBeaconEvent setValue:nowDate forKey:@"lastSeenAt"];
+
+    NSError *error=nil;
+    [self.managedObjectContext save:&error];
+}
+
+- (NSManagedObject *)latestBeaconEvent:(CLBeacon *)beacon
+{
+    NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"BeaconEvent" inManagedObjectContext:self.managedObjectContext];
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    [request setEntity:entityDescription];
+
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"createdAt" ascending:NO];
+    [request setSortDescriptors:@[sortDescriptor]];
+
+    NSPredicate *majorPredicate = [NSPredicate predicateWithFormat:@"major == %@", beacon.major];
+    NSPredicate *minorPredicate = [NSPredicate predicateWithFormat:@"minor == %@", beacon.minor];
+    NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:@[majorPredicate, minorPredicate]];
+    [request setPredicate:predicate];
+
+    NSError *error;
+    NSArray *result = [self.managedObjectContext executeFetchRequest:request error:&error];
+
+    return [result firstObject];
 }
 
 #pragma mark - Core Data stack
