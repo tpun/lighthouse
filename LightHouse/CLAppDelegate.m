@@ -29,7 +29,7 @@
 
     self.locationManager = [[CLLocationManager alloc] init];
     self.locationManager.delegate = self;
-    [self startMonitoring];
+    [self.locationManager startMonitoringForRegion:[self beaconRegion]];
     return YES;
 }
 							
@@ -82,10 +82,11 @@
     return [[CLBeaconRegion alloc] initWithProximityUUID:uuid identifier:@"Light House iBeacon"];
 }
 
-- (void)startMonitoring
+- (void)locationManager:(CLLocationManager *)manager didDetermineState:(CLRegionState)state forRegion:(CLRegion *)region
 {
-    //[self.locationManager startMonitoringForRegion:[self beaconRegion]];
-    [self.locationManager startRangingBeaconsInRegion:[self beaconRegion]];
+    if(state==CLRegionStateInside) {
+        [self.locationManager startRangingBeaconsInRegion:[self beaconRegion]];
+    }
 }
 
 - (void)locationManager:(CLLocationManager *)manager didRangeBeacons:(NSArray *)beacons inRegion:(CLBeaconRegion *)region
