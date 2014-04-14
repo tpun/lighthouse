@@ -7,8 +7,12 @@
 //
 
 #import "CLAppDelegate.h"
-
 #import "CLMasterViewController.h"
+@import CoreLocation;
+
+@interface CLAppDelegate () <UIApplicationDelegate, CLLocationManagerDelegate>
+@property CLLocationManager *locationManager;
+@end
 
 @implementation CLAppDelegate
 
@@ -22,6 +26,10 @@
     UINavigationController *navigationController = (UINavigationController *)self.window.rootViewController;
     CLMasterViewController *controller = (CLMasterViewController *)navigationController.topViewController;
     controller.managedObjectContext = self.managedObjectContext;
+
+    self.locationManager = [[CLLocationManager alloc] init];
+    self.locationManager.delegate = self;
+    [self startMonitoring];
     return YES;
 }
 							
@@ -64,6 +72,51 @@
             NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
             abort();
         } 
+    }
+}
+
+#pragma mark - Light House iBeacon stack
+- (CLBeaconRegion *) beaconRegion
+{
+    NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:@"B9407F30-F5F8-466E-AFF9-25556B57FE6D"];
+    return [[CLBeaconRegion alloc] initWithProximityUUID:uuid identifier:@"Light House iBeacon"];
+}
+
+- (void)startMonitoring
+{
+    [self.locationManager startMonitoringForRegion:[self beaconRegion]];
+}
+
+- (void)locationManager:(CLLocationManager *)manager didRangeBeacons:(NSArray *)beacons inRegion:(CLBeaconRegion *)region
+{
+    // NSLog(@"didRangeBeacons:\n   beacons: %@\n   region: %@", beacons, region);
+    if ([beacons count]==0) {
+        NSLog(@"No beacon detected. stopRangingBeaconsInRegion");
+        [manager stopRangingBeaconsInRegion:region];
+        return;
+    }
+
+    for (CLBeacon *beacon in beacons) {
+        [self updateBeacon:beacon];
+    }
+}
+
+- (void)locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region
+{
+    NSLog(@"didEnterRegion: %@", region);
+    [self.locationManager startRangingBeaconsInRegion:[self beaconRegion]];
+}
+
+- (void)locationManager:(CLLocationManager *)manager didExitRegion:(CLRegion *)region
+{
+    NSLog(@"didExitRegion: %@", region);
+    [self.locationManager stopRangingBeaconsInRegion:[self beaconRegion]];
+}
+
+- (void)updateBeacon:(CLBeacon *)beacon
+{
+    if (CLProximityImmediate==beacon.proximity) {
+        NSLog(@"Major: %@, Minor %@", beacon.major, beacon.minor);
     }
 }
 
