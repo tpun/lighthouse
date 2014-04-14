@@ -75,6 +75,13 @@
     }
 }
 
+- (void)notifyLocally:(NSString *)string
+{
+    UILocalNotification *notification = [[UILocalNotification alloc] init];
+    notification.alertBody = string;
+    [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
+}
+
 #pragma mark - Light House iBeacon stack
 - (CLBeaconRegion *) beaconRegion
 {
@@ -86,6 +93,8 @@
 {
     if(state==CLRegionStateInside) {
         [self.locationManager startRangingBeaconsInRegion:[self beaconRegion]];
+
+        [self notifyLocally:@"Didn't see you here earlier!"];
     }
 }
 
@@ -107,12 +116,16 @@
 {
     NSLog(@"didEnterRegion: %@", region);
     [self.locationManager startRangingBeaconsInRegion:[self beaconRegion]];
+
+    [self notifyLocally:@"Welcome!"];
 }
 
 - (void)locationManager:(CLLocationManager *)manager didExitRegion:(CLRegion *)region
 {
     NSLog(@"didExitRegion: %@", region);
     [self.locationManager stopRangingBeaconsInRegion:[self beaconRegion]];
+
+    [[UIApplication sharedApplication] cancelAllLocalNotifications];
 }
 
 - (void)updateBeacon:(CLBeacon *)beacon
@@ -150,6 +163,8 @@
 
     NSError *error=nil;
     [self.managedObjectContext save:&error];
+
+    [self notifyLocally:[NSString stringWithFormat:@"%@.%@", beacon.major, beacon.minor]];
 }
 
 - (NSManagedObject *)latestBeaconEvent:(CLBeacon *)beacon
