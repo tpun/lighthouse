@@ -210,6 +210,17 @@
 }
  */
 
+- (UIColor *)colorForMajor:(NSNumber*)major
+{
+    if ([major isEqualToNumber:@28364]) {
+        return [UIColor colorWithRed:0 green:0 blue:1 alpha:1];
+    } else if ([major isEqualToNumber:@54330]) {
+        return [UIColor colorWithRed:0 green:1 blue:0 alpha:1];
+    }
+
+    return [UIColor darkGrayColor];
+}
+
 - (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath
 {
     NSManagedObject *object = [self.fetchedResultsController objectAtIndexPath:indexPath];
@@ -218,7 +229,8 @@
     NSNumber *major = [object valueForKey:@"major"];
     NSNumber *minor = [object valueForKey:@"minor"];
     NSTimeInterval interval = [lastSeenAt timeIntervalSinceDate:createdAt];
-    cell.textLabel.text = [NSString stringWithFormat:@"%@.%@: %.0f secs", major, minor, interval];
+    cell.textLabel.text = [NSString stringWithFormat:@"%@.%@:   %.0f seconds", major, minor, interval];
+    cell.textLabel.textColor = [self colorForMajor:major];
 }
 
 @end
