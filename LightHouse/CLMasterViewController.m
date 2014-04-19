@@ -7,8 +7,8 @@
 //
 
 #import "CLMasterViewController.h"
-
 #import "CLDetailViewController.h"
+#import "CLAppDelegate.h"
 
 @interface CLMasterViewController ()
 - (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath;
@@ -29,6 +29,9 @@
 
     UIBarButtonItem *resetButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemTrash target:self action:@selector(deleteHistory:)];
     self.navigationItem.leftBarButtonItem = resetButton;
+
+    UIBarButtonItem *rangeButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(startRanging:)];
+    self.navigationItem.rightBarButtonItem = rangeButton;
 }
 
 - (void)didReceiveMemoryWarning
@@ -52,6 +55,11 @@
         [context deleteObject:object];
     }
     [context save:&error];
+}
+
+- (void)startRanging:(id)sender {
+    CLAppDelegate *appDelegate = [[UIApplication sharedApplication] delegate];
+    [appDelegate startRangingAllRegions];
 }
 
 #pragma mark - Table View
