@@ -29,7 +29,7 @@
 
     self.locationManager = [[CLLocationManager alloc] init];
     self.locationManager.delegate = self;
-    [self.locationManager startMonitoringForRegion:[self beaconRegion]];
+    [self startMonitoringAllRegions];
     return YES;
 }
 							
@@ -86,53 +86,85 @@
 - (CLBeaconRegion *) beaconRegion
 {
     NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:@"B9407F30-F5F8-466E-AFF9-25556B57FE6D"];
-    return [[CLBeaconRegion alloc] initWithProximityUUID:uuid identifier:@"Light House iBeacon"];
+    return [[CLBeaconRegion alloc] initWithProximityUUID:uuid identifier:@"LoopPulseGeneric"];
+}
+
+- (void)startMonitoringAllRegions
+{
+    [self.locationManager startMonitoringForRegion:[self beaconRegion]];
+}
+
+- (void)startRangingAllRegions
+{
+    [self.locationManager startRangingBeaconsInRegion:[self beaconRegion]];
 }
 
 - (void)locationManager:(CLLocationManager *)manager didDetermineState:(CLRegionState)state forRegion:(CLRegion *)region
 {
     if(state==CLRegionStateInside) {
         [self.locationManager startRangingBeaconsInRegion:[self beaconRegion]];
-
-        [self notifyLocally:@"Didn't see you here earlier!"];
     }
 }
 
 - (void)locationManager:(CLLocationManager *)manager didRangeBeacons:(NSArray *)beacons inRegion:(CLBeaconRegion *)region
 {
-    // NSLog(@"didRangeBeacons:\n   beacons: %@\n   region: %@", beacons, region);
-    if ([beacons count]==0) {
-        NSLog(@"No beacon detected. stopRangingBeaconsInRegion");
-        [manager stopRangingBeaconsInRegion:region];
-        return;
-    }
+    if ([region.identifier hasPrefix:@"LoopPulse"]) {
+        if ([beacons count]==0) {
+            //[self notifyLocally:@"No beacon detected. stopRangingBeaconsInRegion"];
+            [manager stopRangingBeaconsInRegion:region];
+            return;
+        }
 
-    for (CLBeacon *beacon in beacons) {
-        [self updateBeacon:beacon];
+        for (CLBeacon *beacon in beacons) {
+            [self updateBeacon:beacon];
+
+            // Monitor specific beacons
+            NSString *identifier = [NSString stringWithFormat:@"LoopPulse-%@:%@", beacon.major, beacon.minor];
+            CLBeaconRegion *beaconRegion = [[CLBeaconRegion alloc] initWithProximityUUID:region.proximityUUID
+                                                                                   major:[beacon.major integerValue]
+                                                                                   minor:[beacon.minor integerValue]
+                                                                              identifier:identifier];
+            if (![self.locationManager.monitoredRegions containsObject:beaconRegion]) {
+                [self.locationManager startMonitoringForRegion:beaconRegion];
+            }
+        }
     }
 }
 
 - (void)locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region
 {
     NSLog(@"didEnterRegion: %@", region);
-    [self.locationManager startRangingBeaconsInRegion:[self beaconRegion]];
 
-    [self notifyLocally:@"Welcome!"];
+    if ([region.identifier hasPrefix:@"LoopPulse"]) {
+        if ([region isKindOfClass:[CLBeaconRegion class]]) {
+            CLBeaconRegion *beaconRegion = (CLBeaconRegion *)region;
+            if (beaconRegion.major && beaconRegion.minor) {
+                [self notifyLocally:[NSString stringWithFormat:@"didEnterRegion %@", [self colorForMajor:beaconRegion.major]]];
+            } else {
+                [self startRangingAllRegions];
+            }
+        }
+    }
 }
 
 - (void)locationManager:(CLLocationManager *)manager didExitRegion:(CLRegion *)region
 {
     NSLog(@"didExitRegion: %@", region);
-    [self.locationManager stopRangingBeaconsInRegion:[self beaconRegion]];
 
-    [[UIApplication sharedApplication] cancelAllLocalNotifications];
+    if ([region.identifier hasPrefix:@"LoopPulse"]) {
+        if ([region isKindOfClass:[CLBeaconRegion class]]) {
+            CLBeaconRegion *beaconRegion = (CLBeaconRegion *)region;
+            if (beaconRegion.major && beaconRegion.minor) {
+                [self notifyLocally:[NSString stringWithFormat:@"didExitRegion %@", [self colorForMajor:beaconRegion.major]]];
+            }
+        }
+    }
 }
 
 - (void)updateBeacon:(CLBeacon *)beacon
 {
+    NSLog(@"Major: %@, Minor %@, Proximity: %d", beacon.major, beacon.minor, (int)beacon.proximity);
     if (CLProximityImmediate==beacon.proximity) {
-        NSLog(@"Major: %@, Minor %@", beacon.major, beacon.minor);
-
         NSError *error=nil;
         NSManagedObject *beaconEvent = [self latestBeaconEvent:beacon];
         if (beaconEvent) {
@@ -151,6 +183,16 @@
     }
 }
 
+- (NSString *)colorForMajor:(NSNumber *)major
+{
+    if ([major isEqualToNumber:@28364]) {
+        return @"Blue";
+    } else if ([major isEqualToNumber:@54330]) {
+        return @"Green";
+    }
+    return @"Unknown";
+}
+
 - (void)createBeaconEvent:(CLBeacon *)beacon
 {
     NSLog(@"createBeaconEvent: %@", beacon);
@@ -163,8 +205,6 @@
 
     NSError *error=nil;
     [self.managedObjectContext save:&error];
-
-    [self notifyLocally:[NSString stringWithFormat:@"%@.%@", beacon.major, beacon.minor]];
 }
 
 - (NSManagedObject *)latestBeaconEvent:(CLBeacon *)beacon
