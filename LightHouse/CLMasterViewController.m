@@ -218,16 +218,29 @@
 }
  */
 
-- (UIColor *)colorForMajor:(NSNumber*)major
+- (UIColor *)colorForMajor:(NSNumber *)major
 {
-    if ([major isEqualToNumber:@28364]) {
-        return [UIColor colorWithRed:0 green:0 blue:1 alpha:1];
-    } else if ([major isEqualToNumber:@54330]) {
-        return [UIColor colorWithRed:0 green:1 blue:0 alpha:1];
+    UIColor *color;
+    switch ([major integerValue]) {
+        case 1213:
+            color = [UIColor purpleColor];
+            break;
+        case 1908:
+            color = [UIColor blueColor];
+            break;
+        case 1901:
+            color = [UIColor whiteColor];
+            break;
+        case 214:
+            color = [UIColor yellowColor];
+            break;
+        default:
+            color = [UIColor grayColor];
+            break;
     }
-
-    return [UIColor darkGrayColor];
+    return color;
 }
+
 
 - (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath
 {
