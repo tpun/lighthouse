@@ -226,7 +226,7 @@
             color = [UIColor purpleColor];
             break;
         case 1908:
-            color = [UIColor blueColor];
+            color = [UIColor colorWithRed:(149.0/255.0) green:(194.0/255.0) blue:(247.0/255.0) alpha:1.0];
             break;
         case 1901:
             color = [UIColor whiteColor];
