@@ -218,27 +218,34 @@
 }
  */
 
-- (UIColor *)colorForMajor:(NSNumber *)major
+- (NSDictionary *)descriptionForMajor:(NSNumber *)major
 {
     UIColor *color;
+    NSString *string;
     switch ([major integerValue]) {
         case 1213:
             color = [UIColor purpleColor];
+            string = @"Purple";
             break;
         case 1908:
             color = [UIColor colorWithRed:(149.0/255.0) green:(194.0/255.0) blue:(247.0/255.0) alpha:1.0];
+            string = @"Light Blue";
             break;
         case 1901:
             color = [UIColor whiteColor];
+            string = @"White";
             break;
         case 214:
             color = [UIColor yellowColor];
+            string = @"Yellow";
             break;
         default:
             color = [UIColor grayColor];
+            string = @"Gray";
             break;
     }
-    return color;
+    NSDictionary *dictionary = [NSDictionary dictionaryWithObjectsAndKeys:color, @"color", string, @"string", nil];
+    return dictionary;
 }
 
 
@@ -247,11 +254,11 @@
     NSManagedObject *object = [self.fetchedResultsController objectAtIndexPath:indexPath];
     NSDate *createdAt = [object valueForKey:@"createdAt"];
     NSDate *lastSeenAt = [object valueForKey:@"lastSeenAt"];
-    NSNumber *major = [object valueForKey:@"major"];
-    NSNumber *minor = [object valueForKey:@"minor"];
     NSTimeInterval interval = [lastSeenAt timeIntervalSinceDate:createdAt];
-    cell.textLabel.text = [NSString stringWithFormat:@"%@.%@:   %.0f seconds", major, minor, interval];
-    cell.textLabel.textColor = [self colorForMajor:major];
+    NSNumber *major = [object valueForKey:@"major"];
+    NSDictionary *description = [self descriptionForMajor:major];
+    cell.textLabel.text = [NSString stringWithFormat:@"%@:   %.0f seconds", [description objectForKey:@"string"], interval];
+    cell.textLabel.textColor = [description objectForKey:@"color"];
 }
 
 @end
