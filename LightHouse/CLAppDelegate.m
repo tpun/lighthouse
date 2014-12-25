@@ -29,6 +29,7 @@
 
     self.locationManager = [[CLLocationManager alloc] init];
     self.locationManager.delegate = self;
+    [self.locationManager requestAlwaysAuthorization];
     [self startMonitoringAllRegions];
     return YES;
 }
@@ -139,7 +140,7 @@
         if ([region isKindOfClass:[CLBeaconRegion class]]) {
             CLBeaconRegion *beaconRegion = (CLBeaconRegion *)region;
             if (beaconRegion.major && beaconRegion.minor) {
-                [self notifyLocally:[NSString stringWithFormat:@"didEnterRegion %@", [self colorForMajor:beaconRegion.major]]];
+                [self notifyLocally:[NSString stringWithFormat:@"didEnterRegion %@", [self colorStringForMajor:beaconRegion.major]]];
             } else {
                 [self startRangingAllRegions];
             }
@@ -155,7 +156,7 @@
         if ([region isKindOfClass:[CLBeaconRegion class]]) {
             CLBeaconRegion *beaconRegion = (CLBeaconRegion *)region;
             if (beaconRegion.major && beaconRegion.minor) {
-                [self notifyLocally:[NSString stringWithFormat:@"didExitRegion %@", [self colorForMajor:beaconRegion.major]]];
+                [self notifyLocally:[NSString stringWithFormat:@"didExitRegion %@", [self colorStringForMajor:beaconRegion.major]]];
             }
         }
     }
@@ -183,14 +184,27 @@
     }
 }
 
-- (NSString *)colorForMajor:(NSNumber *)major
+- (NSString *)colorStringForMajor:(NSNumber *)major
 {
-    if ([major isEqualToNumber:@28364]) {
-        return @"Blue";
-    } else if ([major isEqualToNumber:@54330]) {
-        return @"Green";
+    NSString *color;
+    switch ([major integerValue]) {
+        case 1213:
+            color = @"Purple";
+            break;
+        case 1908:
+            color = @"Blue";
+            break;
+        case 1901:
+            color = @"White";
+            break;
+        case 214:
+            color = @"Yellow";
+            break;
+        default:
+            color = @"Unknown";
+            break;
     }
-    return @"Unknown";
+    return color;
 }
 
 - (void)createBeaconEvent:(CLBeacon *)beacon
