@@ -84,80 +84,105 @@
 }
 
 #pragma mark - Light House iBeacon stack
-- (CLBeaconRegion *) beaconRegion
+- (NSArray *)beaconRegions
 {
     NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:@"B9407F30-F5F8-466E-AFF9-25556B57FE6D"];
-    return [[CLBeaconRegion alloc] initWithProximityUUID:uuid identifier:@"LoopPulseGeneric"];
+    CLBeaconRegion *purple = [[CLBeaconRegion alloc] initWithProximityUUID:uuid
+                                                                     major:1213
+                                                                     minor:14001
+                                                                identifier:@"Purple"];
+    CLBeaconRegion *blue   = [[CLBeaconRegion alloc] initWithProximityUUID:uuid
+                                                                     major:1908
+                                                                     minor:3003
+                                                                identifier:@"Blue"];
+    CLBeaconRegion *white  = [[CLBeaconRegion alloc] initWithProximityUUID:uuid
+                                                                     major:1901
+                                                                     minor:102
+                                                                identifier:@"White"];
+    CLBeaconRegion *yellow = [[CLBeaconRegion alloc] initWithProximityUUID:uuid
+                                                                     major:214
+                                                                     minor:2104
+                                                                identifier:@"Yellow"];
+    return [NSArray arrayWithObjects:purple, blue, white, yellow, nil];
 }
 
 - (void)startMonitoringAllRegions
 {
-    [self.locationManager startMonitoringForRegion:[self beaconRegion]];
+    for (CLBeaconRegion *region in [self beaconRegions]) {
+        if (![self.locationManager.monitoredRegions containsObject:region]) {
+            [self.locationManager startMonitoringForRegion:region];
+            NSLog(@"Started monitoring: %@", region);
+        }
+    }
+
+    NSLog(@"Currently monitoring: %@", self.locationManager.monitoredRegions);
 }
 
 - (void)startRangingAllRegions
 {
-    [self.locationManager startRangingBeaconsInRegion:[self beaconRegion]];
+    for (CLBeaconRegion *region in [self beaconRegions]) {
+        if (![self.locationManager.rangedRegions containsObject:region]) {
+            [self.locationManager startRangingBeaconsInRegion:region];
+            NSLog(@"Started ranging: %@", region);
+        }
+    }
+
+    NSLog(@"Currently ranging: %@", self.locationManager.rangedRegions);
 }
 
 - (void)locationManager:(CLLocationManager *)manager didDetermineState:(CLRegionState)state forRegion:(CLRegion *)region
 {
     if(state==CLRegionStateInside) {
-        [self.locationManager startRangingBeaconsInRegion:[self beaconRegion]];
+        CLBeaconRegion *beaconRegion = (CLBeaconRegion *)region;
+        [self.locationManager startRangingBeaconsInRegion:beaconRegion];
     }
 }
 
 - (void)locationManager:(CLLocationManager *)manager didRangeBeacons:(NSArray *)beacons inRegion:(CLBeaconRegion *)region
 {
-    if ([region.identifier hasPrefix:@"LoopPulse"]) {
-        if ([beacons count]==0) {
-            //[self notifyLocally:@"No beacon detected. stopRangingBeaconsInRegion"];
-            [manager stopRangingBeaconsInRegion:region];
-            return;
-        }
-
-        for (CLBeacon *beacon in beacons) {
-            [self updateBeacon:beacon];
-
-            // Monitor specific beacons
-            NSString *identifier = [NSString stringWithFormat:@"LoopPulse-%@:%@", beacon.major, beacon.minor];
-            CLBeaconRegion *beaconRegion = [[CLBeaconRegion alloc] initWithProximityUUID:region.proximityUUID
-                                                                                   major:[beacon.major integerValue]
-                                                                                   minor:[beacon.minor integerValue]
-                                                                              identifier:identifier];
-            if (![self.locationManager.monitoredRegions containsObject:beaconRegion]) {
-                [self.locationManager startMonitoringForRegion:beaconRegion];
-            }
-        }
-    }
+//    if ([beacons count]==0) {
+//        //[self notifyLocally:@"No beacon detected. stopRangingBeaconsInRegion"];
+//        [manager stopRangingBeaconsInRegion:region];
+//        return;
+//    }
+//
+//    for (CLBeacon *beacon in beacons) {
+//        [self updateBeacon:beacon];
+//
+//        // Monitor specific beacons
+//        NSString *identifier = [NSString stringWithFormat:@"LoopPulse-%@:%@", beacon.major, beacon.minor];
+//        CLBeaconRegion *beaconRegion = [[CLBeaconRegion alloc] initWithProximityUUID:region.proximityUUID
+//                                                                               major:[beacon.major integerValue]
+//                                                                               minor:[beacon.minor integerValue]
+//                                                                          identifier:identifier];
+//        if (![self.locationManager.monitoredRegions containsObject:beaconRegion]) {
+//            [self.locationManager startMonitoringForRegion:beaconRegion];
+//        }
+//    }
 }
 
 - (void)locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region
 {
-    NSLog(@"didEnterRegion: %@", region);
+    NSLog(@"entered: %@", region);
 
-    if ([region.identifier hasPrefix:@"LoopPulse"]) {
-        if ([region isKindOfClass:[CLBeaconRegion class]]) {
-            CLBeaconRegion *beaconRegion = (CLBeaconRegion *)region;
-            if (beaconRegion.major && beaconRegion.minor) {
-                [self notifyLocally:[NSString stringWithFormat:@"didEnterRegion %@", [self colorStringForMajor:beaconRegion.major]]];
-            } else {
-                [self startRangingAllRegions];
-            }
+    if ([region isKindOfClass:[CLBeaconRegion class]]) {
+        CLBeaconRegion *beaconRegion = (CLBeaconRegion *)region;
+        if (beaconRegion.major && beaconRegion.minor) {
+            [self notifyLocally:[NSString stringWithFormat:@"didEnterRegion %@", [self colorStringForMajor:beaconRegion.major]]];
+        } else {
+            [self startRangingAllRegions];
         }
     }
 }
 
 - (void)locationManager:(CLLocationManager *)manager didExitRegion:(CLRegion *)region
 {
-    NSLog(@"didExitRegion: %@", region);
+    NSLog(@"exited: %@", region);
 
-    if ([region.identifier hasPrefix:@"LoopPulse"]) {
-        if ([region isKindOfClass:[CLBeaconRegion class]]) {
-            CLBeaconRegion *beaconRegion = (CLBeaconRegion *)region;
-            if (beaconRegion.major && beaconRegion.minor) {
-                [self notifyLocally:[NSString stringWithFormat:@"didExitRegion %@", [self colorStringForMajor:beaconRegion.major]]];
-            }
+    if ([region isKindOfClass:[CLBeaconRegion class]]) {
+        CLBeaconRegion *beaconRegion = (CLBeaconRegion *)region;
+        if (beaconRegion.major && beaconRegion.minor) {
+            [self notifyLocally:[NSString stringWithFormat:@"didExitRegion %@", [self colorStringForMajor:beaconRegion.major]]];
         }
     }
 }
