@@ -8,10 +8,12 @@
 
 #import "CLAppDelegate.h"
 #import "CLMasterViewController.h"
+#import <Firebase/Firebase.h>
 @import CoreLocation;
 
 @interface CLAppDelegate () <UIApplicationDelegate, CLLocationManagerDelegate>
 @property CLLocationManager *locationManager;
+@property Firebase *firebase;
 @end
 
 @implementation CLAppDelegate
@@ -31,6 +33,9 @@
     self.locationManager.delegate = self;
     [self.locationManager requestAlwaysAuthorization];
     [self startMonitoringAllRegions];
+
+    
+    self.firebase = [[Firebase alloc] initWithUrl:@"https://looppulse.firebaseio.com/beacon_events"];
 
     if ([UIApplication instancesRespondToSelector:@selector(registerUserNotificationSettings:)]){
         [application registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert|UIUserNotificationTypeBadge|UIUserNotificationTypeSound categories:nil]];
