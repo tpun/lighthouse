@@ -3,12 +3,21 @@
 </head>
 
 <body>
-  <h1>Welcome to Meteor!</h1>
-
-  {{> hello}}
+  <h1>Loop Pulse iBeacon Demo</h1>
+  {{> products}}
 </body>
 
-<template name="hello">
-  <button>Click Me</button>
-  <p>You've pressed the button {{counter}} times.</p>
+<template name="products">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Product Name</th>
+        <th>Current Visits</th>
+        <th>Total Visits</th>
+        <th>Total Dwell (seconds)</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
 </template>
