@@ -9,10 +9,12 @@
 #import "CLAppDelegate.h"
 #import "CLMasterViewController.h"
 #import <Firebase/Firebase.h>
+#import <AdSupport/AdSupport.h>
 @import CoreLocation;
 
 @interface CLAppDelegate () <UIApplicationDelegate, CLLocationManagerDelegate>
 @property CLLocationManager *locationManager;
+@property (nonatomic) NSUUID *advertisingIdentifier;
 @property Firebase *firebase;
 @end
 
@@ -34,7 +36,6 @@
     [self.locationManager requestAlwaysAuthorization];
     [self startMonitoringAllRegions];
 
-    
     self.firebase = [[Firebase alloc] initWithUrl:@"https://looppulse.firebaseio.com/beacon_events"];
 
     if ([UIApplication instancesRespondToSelector:@selector(registerUserNotificationSettings:)]){
@@ -42,6 +43,12 @@
     }
 
     return YES;
+}
+
+- (NSUUID *)advertisingIdentifier
+{
+    ASIdentifierManager *adManager = [ASIdentifierManager sharedManager];
+    return adManager.advertisingIdentifier;
 }
 							
 - (void)applicationWillResignActive:(UIApplication *)application
