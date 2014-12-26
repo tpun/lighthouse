@@ -100,6 +100,19 @@
     [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
 }
 
+- (void)logEvent:(NSString *)type withBeaconRegion:(CLBeaconRegion *)region
+{
+    NSDictionary *event = @{@"type": type,
+                            @"createdAt": [NSNumber numberWithFloat:[[NSDate date] timeIntervalSince1970]],
+                            @"visitorUUID": [self.advertisingIdentifier UUIDString],
+                            @"proximityUUID": [region.proximityUUID UUIDString],
+                            @"major": region.major,
+                            @"minor": region.minor,
+                            @"name": region.identifier};
+    Firebase *ref = [self.firebase childByAutoId];
+    [ref setValue:event];
+}
+
 #pragma mark - Light House iBeacon stack
 - (NSArray *)beaconRegions
 {
@@ -184,6 +197,9 @@
 
     if ([region isKindOfClass:[CLBeaconRegion class]]) {
         CLBeaconRegion *beaconRegion = (CLBeaconRegion *)region;
+        [self logEvent:@"didEnterRegion" withBeaconRegion:beaconRegion];
+
+
         if (beaconRegion.major && beaconRegion.minor) {
             [self notifyLocally:[NSString stringWithFormat:@"didEnterRegion %@", [self colorStringForMajor:beaconRegion.major]]];
         } else {
@@ -198,6 +214,8 @@
 
     if ([region isKindOfClass:[CLBeaconRegion class]]) {
         CLBeaconRegion *beaconRegion = (CLBeaconRegion *)region;
+        [self logEvent:@"didExitRegion" withBeaconRegion:beaconRegion];
+
         if (beaconRegion.major && beaconRegion.minor) {
             [self notifyLocally:[NSString stringWithFormat:@"didExitRegion %@", [self colorStringForMajor:beaconRegion.major]]];
         }
