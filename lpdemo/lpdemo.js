@@ -7,7 +7,9 @@ if (Meteor.isClient) {
 
   Template.product.helpers({
     totalDwellRounded: function () {
-      return Math.round(this.totalDwell);
+      if (this.totalDwell) {
+        return Math.round(this.totalDwell);
+      }
     }
   })
 }
