@@ -35,6 +35,7 @@
     self.locationManager.delegate = self;
     [self.locationManager requestAlwaysAuthorization];
     [self startMonitoringAllRegions];
+    [self startRangingAllRegions];
 
     self.firebase = [[Firebase alloc] initWithUrl:@"https://looppulse.firebaseio.com/beacon_events"];
 
@@ -160,35 +161,19 @@
     NSLog(@"Currently ranging: %@", self.locationManager.rangedRegions);
 }
 
-- (void)locationManager:(CLLocationManager *)manager didDetermineState:(CLRegionState)state forRegion:(CLRegion *)region
-{
-    if(state==CLRegionStateInside) {
-        CLBeaconRegion *beaconRegion = (CLBeaconRegion *)region;
-        [self.locationManager startRangingBeaconsInRegion:beaconRegion];
-    }
-}
+//- (void)locationManager:(CLLocationManager *)manager didDetermineState:(CLRegionState)state forRegion:(CLRegion *)region
+//{
+//    if(state==CLRegionStateInside) {
+//        CLBeaconRegion *beaconRegion = (CLBeaconRegion *)region;
+//        [self.locationManager startRangingBeaconsInRegion:beaconRegion];
+//    }
+//}
 
 - (void)locationManager:(CLLocationManager *)manager didRangeBeacons:(NSArray *)beacons inRegion:(CLBeaconRegion *)region
 {
-//    if ([beacons count]==0) {
-//        //[self notifyLocally:@"No beacon detected. stopRangingBeaconsInRegion"];
-//        [manager stopRangingBeaconsInRegion:region];
-//        return;
-//    }
-//
-//    for (CLBeacon *beacon in beacons) {
-//        [self updateBeacon:beacon];
-//
-//        // Monitor specific beacons
-//        NSString *identifier = [NSString stringWithFormat:@"LoopPulse-%@:%@", beacon.major, beacon.minor];
-//        CLBeaconRegion *beaconRegion = [[CLBeaconRegion alloc] initWithProximityUUID:region.proximityUUID
-//                                                                               major:[beacon.major integerValue]
-//                                                                               minor:[beacon.minor integerValue]
-//                                                                          identifier:identifier];
-//        if (![self.locationManager.monitoredRegions containsObject:beaconRegion]) {
-//            [self.locationManager startMonitoringForRegion:beaconRegion];
-//        }
-//    }
+    for (CLBeacon *beacon in beacons) {
+        [self updateBeacon:beacon];
+    }
 }
 
 - (void)locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region
@@ -199,11 +184,8 @@
         CLBeaconRegion *beaconRegion = (CLBeaconRegion *)region;
         [self logEvent:@"didEnterRegion" withBeaconRegion:beaconRegion atTime:[NSDate date]];
 
-
         if (beaconRegion.major && beaconRegion.minor) {
             [self notifyLocally:[NSString stringWithFormat:@"didEnterRegion %@", [self colorStringForMajor:beaconRegion.major]]];
-        } else {
-            [self startRangingAllRegions];
         }
     }
 }
