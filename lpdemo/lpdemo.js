@@ -18,6 +18,12 @@ if (Meteor.isClient) {
       Meteor.call('resetDatabase');
     }
   });
+
+  Template.beaconEvents.helpers({
+    beaconEvents: function (n) {
+      return BeaconEvents.find({},{sort: {createdAt:-1}, limit:n});
+    }
+  })
 }
 
 if (Meteor.isServer) {

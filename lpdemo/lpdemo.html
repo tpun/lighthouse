@@ -9,6 +9,10 @@
     {{> reset}}
     <br>
     {{> products}}
+    <br>
+    <br>
+    <br>
+    {{> beaconEvents }}
   </div>
 </body>
 
@@ -45,4 +49,30 @@
   <div style='float: right'>
     <button class='btn btn-link'>Reset</button>
   </div>
+</template>
+
+<template name="beaconEvents">
+  <h2>Last 10 events</h2>
+  <table class="table table-condensed">
+    <thead>
+      <tr>
+        <th>Product Name</th>
+        <th>Visitor UUID</th>
+        <th>Event Type</th>
+        <th>Created At</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each beaconEvents 10}}
+      <tr>{{> beaconEvent }}</tr>
+      {{/each}}
+    </tbody>
+  </table>
+</template>
+
+<template name="beaconEvent">
+  <td>{{ name }}</td>
+  <td>{{ visitorUUID }}</td>
+  <td>{{ type }}</td>
+  <td>{{ createdAt }}</td>
 </template>
