@@ -100,10 +100,10 @@
     [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
 }
 
-- (void)logEvent:(NSString *)type withBeaconRegion:(CLBeaconRegion *)region
+- (void)logEvent:(NSString *)type withBeaconRegion:(CLBeaconRegion *)region atTime:(NSDate *)date
 {
     NSDictionary *event = @{@"type": type,
-                            @"createdAt": [NSNumber numberWithFloat:[[NSDate date] timeIntervalSince1970]],
+                            @"createdAt": [NSNumber numberWithDouble:[date timeIntervalSince1970]],
                             @"visitorUUID": [self.advertisingIdentifier UUIDString],
                             @"proximityUUID": [region.proximityUUID UUIDString],
                             @"major": region.major,
@@ -197,7 +197,7 @@
 
     if ([region isKindOfClass:[CLBeaconRegion class]]) {
         CLBeaconRegion *beaconRegion = (CLBeaconRegion *)region;
-        [self logEvent:@"didEnterRegion" withBeaconRegion:beaconRegion];
+        [self logEvent:@"didEnterRegion" withBeaconRegion:beaconRegion atTime:[NSDate date]];
 
 
         if (beaconRegion.major && beaconRegion.minor) {
@@ -214,7 +214,7 @@
 
     if ([region isKindOfClass:[CLBeaconRegion class]]) {
         CLBeaconRegion *beaconRegion = (CLBeaconRegion *)region;
-        [self logEvent:@"didExitRegion" withBeaconRegion:beaconRegion];
+        [self logEvent:@"didExitRegion" withBeaconRegion:beaconRegion atTime:[NSDate date]];
 
         if (beaconRegion.major && beaconRegion.minor) {
             [self notifyLocally:[NSString stringWithFormat:@"didExitRegion %@", [self colorStringForMajor:beaconRegion.major]]];
