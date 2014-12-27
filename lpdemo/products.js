@@ -16,7 +16,7 @@ Product.processExitEvent = function (event) {
       {name: event.name},
       {$addToSet: {totalVisitors: event.visitorUUID},
       $pull: {currentVisitors: event.visitorUUID},
-      $inc: {totalDwell: dwell}}
+      $inc: {totalDwell: dwell, totalVisits: 1}}
     );
   }
 
