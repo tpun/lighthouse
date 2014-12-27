@@ -32,3 +32,19 @@ BeaconEvents.findUnprocessedExitEvents = function () {
       processed: {$exists: false} }
   );
 };
+
+BeaconEvents.minExitSeconds = 30.0; // iOS only
+BeaconEvents.calDwellTimeFromExitEvent = function (exitEvent) {
+  var enterEvent = BeaconEvents.findMatchingEnterEvent(exitEvent);
+  if (!enterEvent) {
+    console.warn("[BeaconEvents.calDwellTime] Can't find matching enter event for _id: ", exitEvent._id);
+    return NaN;
+  }
+
+  var dwell = exitEvent.createdAt - enterEvent.createdAt;
+  if (dwell > BeaconEvents.minExitSeconds) {
+    dwell -= BeaconEvents.minExitSeconds;
+  }
+
+  return dwell;
+}
