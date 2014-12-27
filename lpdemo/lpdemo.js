@@ -18,12 +18,17 @@ if (Meteor.isServer) {
     firebase.on('child_added', Meteor.bindEnvironment(callback));
   };
 
+  var removeFromFirebase = function (ref) {
+    var firebase = new Firebase(ref);
+    firebase.remove();
+  }
+
   Meteor.startup(function () {
     observeFirebase(Meteor.settings.firebase,
                     function (snapshot) {
                       var newEvent = snapshot.val();
                       processBeaconEventsFromFirebase(newEvent);
-                      // Remove processed beacon event
+                      removeFromFirebase(snapshot.ref().toString());
                     });
     Product.startup();
   });
