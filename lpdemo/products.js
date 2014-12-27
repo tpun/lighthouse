@@ -1,10 +1,10 @@
 Products = new Mongo.Collection('products');
-
 Product = {};
 
 Product.processEnterEvent = function (event) {
   Products.upsert({name: event.name},
     {$addToSet: {currentVisitors: event.visitorUUID}});
+  BeaconEvents.markProcessed(event);
 };
 
 Product.processExitEvent = function (event) {
@@ -22,14 +22,15 @@ Product.processExitEvent = function (event) {
      $pull: {currentVisitors: event.visitorUUID},
      $inc: {totalDwell: dwell}}
   );
+  BeaconEvents.markProcessed(event);
 }
 
 Product.startup = function () {
-  BeaconEvents.find({type: 'didEnterRegion'}).observe({
+  BeaconEvents.findUnprocessedEnterEvents().observe({
     "added": Product.processEnterEvent
   });
 
-  BeaconEvents.find({type: 'didExitRegion'}).observe({
+  BeaconEvents.findUnprocessedExitEvents().observe({
     "added": Product.processExitEvent
   });
 };
