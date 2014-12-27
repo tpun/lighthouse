@@ -206,7 +206,7 @@
 
 - (void)updateBeacon:(CLBeacon *)beacon
 {
-    NSLog(@"Major: %@, Minor %@, Proximity: %d", beacon.major, beacon.minor, (int)beacon.proximity);
+//    NSLog(@"Major: %@, Minor %@, Proximity: %d", beacon.major, beacon.minor, (int)beacon.proximity);
     if (CLProximityImmediate==beacon.proximity) {
         NSError *error=nil;
         NSManagedObject *beaconEvent = [self latestBeaconEvent:beacon];
