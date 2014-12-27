@@ -3,8 +3,13 @@
 </head>
 
 <body>
-  <h1>Loop Pulse iBeacon Demo</h1>
-  {{> products}}
+  <div class='container'>
+    <h1>Loop Pulse iBeacon Demo</h1>
+    <br>
+    {{> reset}}
+    <br>
+    {{> products}}
+  </div>
 </body>
 
 <template name="products">
@@ -32,4 +37,10 @@
   <td>{{ currentVisitors.length }}</td>
   <td>{{ totalVisitors.length }}</td>
   <td>{{ totalDwellRounded }}</td>
+</template>
+
+<template name="reset">
+  <div style='float: right'>
+    <button class='btn btn-link'>Reset</button>
+  </div>
 </template>

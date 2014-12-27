@@ -11,7 +11,13 @@ if (Meteor.isClient) {
         return Math.round(this.totalDwell);
       }
     }
-  })
+  });
+
+  Template.reset.events({
+    'click button': function () {
+      Meteor.call('resetDatabase');
+    }
+  });
 }
 
 if (Meteor.isServer) {
@@ -33,5 +39,14 @@ if (Meteor.isServer) {
                       removeFromFirebase(snapshot.ref().toString());
                     });
     Product.startup();
+  });
+
+  Meteor.methods({
+    resetDatabase: function () {
+      this.unblock();
+      BeaconEvents.remove({});
+      Products.remove({});
+      console.info('Reseted database');
+    }
   });
 }
