@@ -2,6 +2,7 @@ Products = new Mongo.Collection('products');
 Product = {};
 
 Product.processEnterEvent = function (event) {
+  console.info(event.visitorUUID, 'entering', event.name);
   Products.upsert({name: event.name},
     {$addToSet: {currentVisitors: event.visitorUUID}});
   BeaconEvents.markProcessed(event);
