@@ -1,19 +1,15 @@
 if (Meteor.isClient) {
-  // counter starts at 0
-  Session.setDefault("counter", 0);
-
-  Template.hello.helpers({
-    counter: function () {
-      return Session.get("counter");
+  Template.products.helpers({
+    products: function () {
+      return Products.find();
     }
   });
 
-  Template.hello.events({
-    'click button': function () {
-      // increment the counter when button is clicked
-      Session.set("counter", Session.get("counter") + 1);
+  Template.product.helpers({
+    totalDwellRounded: function () {
+      return Math.round(this.totalDwell);
     }
-  });
+  })
 }
 
 if (Meteor.isServer) {
@@ -25,9 +21,10 @@ if (Meteor.isServer) {
   Meteor.startup(function () {
     observeFirebase(Meteor.settings.firebase,
                     function (snapshot) {
-                      var newDoc = snapshot.val();
-                      console.info(newDoc);
+                      var newEvent = snapshot.val();
+                      processBeaconEventsFromFirebase(newEvent);
                       // Remove processed beacon event
                     });
+    Product.startup();
   });
 }

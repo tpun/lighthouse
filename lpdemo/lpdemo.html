@@ -12,12 +12,24 @@
     <thead>
       <tr>
         <th>Product Name</th>
-        <th>Current Visits</th>
-        <th>Total Visits</th>
+        <th>Current Visitors</th>
+        <th>Unique Visitors</th>
         <th>Total Dwell (seconds)</th>
       </tr>
     </thead>
     <tbody>
+      {{#each products}}
+      <tr>
+        {{> product}}
+      </tr>
+      {{/each}}
     </tbody>
   </table>
+</template>
+
+<template name="product">
+  <td>{{ name }}</td>
+  <td>{{ currentVisitors.length }}</td>
+  <td>{{ totalVisitors.length }}</td>
+  <td>{{ totalDwellRounded }}</td>
 </template>
